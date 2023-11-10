@@ -295,22 +295,14 @@ class CornersProblem(search.SearchProblem):
         Returns the start state (in your state space, not the full Pacman state
         space)
         """
-        return (self.startingPosition, [])
+        "*** YOUR CODE HERE ***"
         util.raiseNotDefined()
 
     def isGoalState(self, state: Any):
         """
         Returns whether this search state is a goal state of the problem.
         """
-        node = state[0]
-        visitedcorners = state[1]
-
-        if node in self.corners:
-            if not node in visitedcorners:
-                visitedcorners.append(node)
-            return len(visitedcorners) == 4
-        return False
-
+        "*** YOUR CODE HERE ***"
         util.raiseNotDefined()
 
     def getSuccessors(self, state: Any):
@@ -323,8 +315,7 @@ class CornersProblem(search.SearchProblem):
             state, 'action' is the action required to get there, and 'stepCost'
             is the incremental cost of expanding to that successor
         """
-        x, y = state[0]
-        visitedcorners = state[1]
+
         successors = []
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             # Add a successor state to the successor list if the action is legal
@@ -334,18 +325,7 @@ class CornersProblem(search.SearchProblem):
             #   nextx, nexty = int(x + dx), int(y + dy)
             #   hitsWall = self.walls[nextx][nexty]
 
-            dx, dy = Actions.directionToVector(action)
-            nextx, nexty = int(x + dx), int(y + dy)
-            hitswall = self.walls[nextx][nexty]
-
-            if not hitswall:
-                successorsvisistedcorners = list(visitedcorners)
-                next_node = (nextx,nexty)
-                if next_node in self.corners:
-                    if next_node not in successorsvisistedcorners:
-                        successorsvisistedcorners.append(next_node)
-                successor = ((next_node, successorsvisistedcorners), action, 1)
-                successors.append(successor)
+            "*** YOUR CODE HERE ***"
 
         self._expanded += 1 # DO NOT CHANGE
         return successors
@@ -380,23 +360,8 @@ def cornersHeuristic(state: Any, problem: CornersProblem):
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
-    visitedcorners = state[1]
-    cornersleft = []
-    for corner in corners:
-        if corner not in visitedcorners:
-            cornersleft.append(corner)
-
-    totalcost = 0
-    coordinate = state[0]
-    curpoint = coordinate
-    while cornersleft:
-        heuristis_cost, corner = min([(util.manhattanDistance(curpoint, corner), corner) for corner in cornersleft])
-        cornersleft.remove(corner)
-        curpoint = corner
-        totalcost += heuristis_cost
-
-
-    return totalcost # Default to trivial solution
+    "*** YOUR CODE HERE ***"
+    return 0 # Default to trivial solution
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
