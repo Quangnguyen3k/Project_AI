@@ -152,16 +152,16 @@ def uniformCostSearch(problem: SearchProblem):
 
     while not hangcho.isEmpty():
 
-        nodeht, actions, chiphi =hangcho.pop()
+        nodeht, actions, precost =hangcho.pop()
         if nodeht not in nodedaqua:
             nodedaqua.append(nodeht)
 
             if problem.isGoalState(nodeht):
                 return actions
 
-            for nodehx, action, chiphinodehx in problem.getSuccessors(nodeht):
+            for nodehx, action, cost in problem.getSuccessors(nodeht):
                 newAction = actions + [action]
-                priority = chiphi + chiphinodehx
+                priority = precost + cost
                 hangcho.push((nodehx, newAction, priority),priority)
     util.raiseNotDefined()
 
@@ -175,6 +175,30 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
+    nodebd = problem.getStartState()
+    if problem.isGoalState(nodebd):
+        return []
+
+    nodedaxet = []
+
+    hangcho = util.PriorityQueue()
+    hangcho.push((nodebd, [], 0), 0)
+
+    while not hangcho.isEmpty():
+
+        nodeht, actions, prevCost = hangcho.pop()
+
+        if nodeht not in nodedaxet:
+            nodedaxet.append(nodeht)
+
+            if problem.isGoalState(nodeht):
+                return actions
+
+            for nodehx, action, cost in problem.getSuccessors(nodeht):
+                newAction = actions + [action]
+                newCostToNode = prevCost + cost
+                heuristicCost = newCostToNode + heuristic(nodehx,problem)
+                hangcho.push((nodehx, newAction, newCostToNode),heuristicCost)
     util.raiseNotDefined()
 
 
