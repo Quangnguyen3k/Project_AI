@@ -45,10 +45,9 @@ class PerceptronModel(object):
         Train the perceptron until convergence.
         """
         "*** YOUR CODE HERE ***"
-        batchsize = 1
         while True:
             converged = True
-            for x, y in dataset.iterate_once(batchsize):
+            for x, y in dataset.iterate_once(1):
                 prediction = self.get_prediction(x)
                 if prediction != nn.as_scalar(y):
                     converged = False
