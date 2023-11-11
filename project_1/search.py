@@ -87,7 +87,31 @@ def depthFirstSearch(problem: SearchProblem):
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
-    print('Lam ngu')
+    bandau=problem.getStartState()
+    daxet=set()
+    hangcho=[]
+    nuttruoc={}
+    dich=None
+    daxet.add(bandau)
+    for i in problem.getSuccessors(bandau):
+        nuttruoc[i] = (bandau,None,None)
+        hangcho.append(i)
+    while hangcho:
+        u = hangcho.pop()
+        if u[0] in daxet: continue
+        if problem.isGoalState(u[0]):
+            dich = u
+            break
+        daxet.add(u[0])
+        for i in problem.getSuccessors(u[0]):
+            nuttruoc[i] = u
+            hangcho.append(i)
+    path,current_node = [],dich
+    while current_node != (bandau,None,None):
+        path.append(current_node[1])
+        current_node = nuttruoc[current_node]
+    path.reverse()
+    return path
     util.raiseNotDefined()
 
 def breadthFirstSearch(problem: SearchProblem):
