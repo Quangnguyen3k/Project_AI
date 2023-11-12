@@ -64,6 +64,13 @@ class RegressionModel(object):
     def __init__(self):
         # Initialize your model parameters here
         "*** YOUR CODE HERE ***"
+        self.w1 = nn.Parameter(1, 512)
+        self.b1 = nn.Parameter(1, 512)
+        self.w2 = nn.Parameter(512, 256)
+        self.b2 = nn.Parameter(1, 256)
+        self.w3 = nn.Parameter(256, 1)
+        self.b3 = nn.Parameter(1, 1)
+        self.list = [self.w1, self.b1, self.w2, self.b2, self.w3, self.b3]
 
     def run(self, x):
         """
@@ -75,7 +82,15 @@ class RegressionModel(object):
             A node with shape (batch_size x 1) containing predicted y-values
         """
         "*** YOUR CODE HERE ***"
-
+        linearlayer1 = nn.Linear(x,self.w1)
+        predictlayer1 = nn.AddBias(linearlayer1,self.b1)
+        relulayer1 = nn.ReLU(predictlayer1)
+        linearlayer2 = nn.Linear(relulayer1, self.w2)
+        predictlayer2 = nn.AddBias(linearlayer2, self.b2)
+        relulayer2 = nn.ReLU(predictlayer2)
+        linearlayer3 = nn.Linear(relulayer2,self.w3)
+        predictlayer3 = nn.AddBias(linearlayer3,self.b3)
+        return predictlayer3
     def get_loss(self, x, y):
         """
         Computes the loss for a batch of examples.
@@ -87,12 +102,20 @@ class RegressionModel(object):
         Returns: a loss node
         """
         "*** YOUR CODE HERE ***"
-
+        return nn.SquareLoss(self.run(x),y)
     def train(self, dataset):
         """
         Trains the model.
         """
         "*** YOUR CODE HERE ***"
+        loss = 0.6
+        while loss >= 0.02:
+            for x, y in dataset.iterate_once(200):
+                loss = self.get_loss(x,y)
+                grad = nn.gradients(loss, self.list)
+                for i in range(len(self.list)):
+                    self.list[i].update(grad[i], -0.05)
+            loss = nn.as_scalar(loss)
 
 class DigitClassificationModel(object):
     """
