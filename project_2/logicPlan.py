@@ -57,7 +57,6 @@ def sentence1() -> Expr:
     second = ~a % (~b | c)
     third = disjoin(~a, ~b, c)
     return conjoin(first, second, third)
-    util.raiseNotDefined()
     "*** END YOUR CODE HERE ***"
 
 
@@ -79,7 +78,7 @@ def sentence2() -> Expr:
     third = ~(b & ~c) >> a
     fourth = ~d >> c
     return conjoin(first, second, third, fourth)
-    util.raiseNotDefined()
+
     "*** END YOUR CODE HERE ***"
 
 
@@ -104,7 +103,7 @@ def sentence3() -> Expr:
     second = ~(a & c)
     third = c
     return conjoin(first, second, third)
-    util.raiseNotDefined()
+
     "*** END YOUR CODE HERE ***"
 
 def findModel(sentence: Expr) -> Dict[Expr, bool]:
@@ -120,14 +119,13 @@ def findModelUnderstandingCheck() -> Dict[Expr, bool]:
     """
     a = Expr('A')
     "*** BEGIN YOUR CODE HERE ***"
-    class dummyClass:
+    class CloneObject:
         def __init__(self, variable_name: str = 'A'):
             self.variable_name =variable_name
 
         def __repr__(self):
             return self.variable_name
-    return{dummyClass('a'): True}
-    print("a.__dict__ is:", a.__dict__) # might be helpful for getting ideas
+    return{CloneObject('a'): True}
     util.raiseNotDefined()
     "*** END YOUR CODE HERE ***"
 
@@ -137,7 +135,7 @@ def entails(premise: Expr, conclusion: Expr) -> bool:
     "*** BEGIN YOUR CODE HERE ***"
     resule = ~conclusion & premise
 
-    if(findModel(result) == False):
+    if(findModel(resule) == False):
         return True
     else:
         return False
@@ -189,11 +187,11 @@ def atMostOne(literals: List[Expr]) -> Expr:
     itertools.combinations may be useful here.
     """
     "*** BEGIN YOUR CODE HERE ***"
-    1st = []
+    st = []
     for i in itertools.combinations(literals, 2):
         s = ~i[0] | ~i[1]
-        1st.appends(s)
-    return conjoin(1st)
+        st.append(s)
+    return conjoin(st)
     util.raiseNotDefined()
     "*** END YOUR CODE HERE ***"
 
