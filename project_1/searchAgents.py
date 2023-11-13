@@ -326,7 +326,7 @@ class CornersProblem(search.SearchProblem):
             is the incremental cost of expanding to that successor
         """
         x, y = state[0]
-        visitedCorners = state[1]
+        cacgocdaqua = state[1]
         successors = []
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             # Add a successor state to the successor list if the action is legal
@@ -339,12 +339,12 @@ class CornersProblem(search.SearchProblem):
             nextx, nexty = int(x + dx), int(y + dy)
             hitsWall = self.walls[nextx][nexty]
             if not hitsWall:
-                successorVisitedCorners = list(visitedCorners)
+                gocdaqua2 = list(cacgocdaqua)
                 next_node = (nextx, nexty)
                 if next_node in self.corners:
-                    if next_node not in successorVisitedCorners:
-                        successorVisitedCorners.append(next_node)
-                successor = ((next_node, successorVisitedCorners), action, 1)
+                    if next_node not in gocdaqua2:
+                        gocdaqua2.append(next_node)
+                successor = ((next_node, gocdaqua2), action, 1)
                 successors.append(successor)
             "*** YOUR CODE HERE ***"
 
@@ -382,7 +382,25 @@ def cornersHeuristic(state: Any, problem: CornersProblem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    cacgocdaqua = state[1]
+    cacgocphaiqua = []
+    for corner in corners:
+        if corner not in cacgocdaqua:
+            cacgocphaiqua.append(corner)
+
+    # While not all corners are visited find via manhattanDistance
+    #  the most efficient path for each corner
+    totalCost = 0
+    ttht = state[0]
+    curPoint = ttht
+    while cacgocphaiqua:
+        heuristic_cost, corner = \
+            min([(util.manhattanDistance(curPoint, corner), corner) for corner in cacgocphaiqua])
+        cacgocphaiqua.remove(corner)
+        curPoint = corner
+        totalCost += heuristic_cost
+    return totalCost
+
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -476,8 +494,17 @@ def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+    return len(foodGrid.asList())
+    foodToEat = foodGrid.asList()
+    totalCost = 0
+    curPoint = position
+    while foodToEat:
+        heuristic_cost, food = min([(util.manhattanDistance(curPoint, food), food) for food in foodToEat])
+        foodToEat.remove(food)
+        curPoint = food
+        totalCost += heuristic_cost
 
+    return totalCost
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
     def registerInitialState(self, state):
@@ -505,8 +532,8 @@ class ClosestDotSearchAgent(SearchAgent):
         food = gameState.getFood()
         walls = gameState.getWalls()
         problem = AnyFoodSearchProblem(gameState)
-
         "*** YOUR CODE HERE ***"
+        return search.aStarSearch(problem)
         util.raiseNotDefined()
 
 class AnyFoodSearchProblem(PositionSearchProblem):
@@ -543,7 +570,9 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         x,y = state
 
         "*** YOUR CODE HERE ***"
+        return self.food[x][y]
         util.raiseNotDefined()
+
 
 def mazeDistance(point1: Tuple[int, int], point2: Tuple[int, int], gameState: pacman.GameState) -> int:
     """
