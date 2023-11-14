@@ -513,23 +513,20 @@ def localization(problem, agent) -> Generator:
             KB.append(~PropSymbolExpr(wall_str, a, b))
 
     for t in range(agent.num_timesteps):
-        # add pac physics
-        KB.append(pacphysicsAxioms(t, all_coords, non_outer_wall_coords, walls_grid,
-                                   sensorModel=sensorAxioms, successorAxioms=allLegalSuccessorAxioms))
 
-        # add action and percepts
+        KB.append(pacphysicsAxioms(t, all_coords, non_outer_wall_coords, walls_grid,sensorModel=sensorAxioms, successorAxioms=allLegalSuccessorAxioms))
         KB.append(PropSymbolExpr(agent.actions[t], time=t))
         KB.append(fourBitPerceptRules(t, agent.getPercepts()))
 
         possible_locations = []
         for a, b in non_outer_wall_coords:
             whether_pacman = PropSymbolExpr(pacman_str, a, b, time=t)
-            examine = conjoin(KB)
-            if findModel(examine & whether_pacman):
+            examine = findModel(conjoin(KB) & whether_pacman)
+            if examine:
                 possible_locations.append((a, b))
 
-            check1 = entails(examine, whether_pacman)
-            check2 = entails(examine, ~whether_pacman)
+            check1 = entails(conjoin(KB), whether_pacman)
+            check2 = entails(conjoin(KB), ~whether_pacman)
             if check1 and check2:
                 exit(-1)
 
@@ -568,9 +565,38 @@ def mapping(problem, agent) -> Generator:
     KB.append(conjoin(outer_wall_sent))
 
     "*** BEGIN YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    KB.append(PropSymbolExpr(pacman_str, pac_x_0, pac_y_0, time=0))
+    # vì đã biết pacman ở  pacx0y0 nên knowmap = 0
+    known_map[pac_x_0][pac_y_0] = 0
+
+    KB.append(~PropSymbolExpr(wall_str, pac_x_0, pac_y_0))
 
     for t in range(agent.num_timesteps):
+
+        KB.append(pacphysicsAxioms(t, all_coords, non_outer_wall_coords, known_map, sensorModel=sensorAxioms, successorAxioms=allLegalSuccessorAxioms))
+
+        KB.append(PropSymbolExpr(agent.actions[t], time=t))
+        KB.append(fourBitPerceptRules(t, agent.getPercepts()))
+
+        for x, y in non_outer_wall_coords:
+
+            whether_wall = PropSymbolExpr(wall_str, x, y)
+
+            if known_map[x][y] == -1:
+                check1 = entails(conjoin(KB), whether_wall)
+                check2 = entails(conjoin(KB), ~whether_wall)
+
+                if check1 and check2:
+                    exit(-1)
+
+                if check1:
+                    known_map[x][y] = 1
+                    KB.append(whether_wall)
+                elif check2:
+                    known_map[x][y] = 0
+                    KB.append(~whether_wall)
+
+        agent.moveToNextState(agent.actions[t])
         "*** END YOUR CODE HERE ***"
         yield known_map
 
@@ -600,10 +626,54 @@ def slam(problem, agent) -> Generator:
     KB.append(conjoin(outer_wall_sent))
 
     "*** BEGIN YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    KB.append(PropSymbolExpr(pacman_str, pac_x_0, pac_y_0, time=0))
+
+    known_map[pac_x_0][pac_y_0] = 0
+
+    KB.append(~PropSymbolExpr(wall_str, pac_x_0, pac_y_0))
 
     for t in range(agent.num_timesteps):
-        "*** END YOUR CODE HERE ***"
+        KB.append(pacphysicsAxioms(t, all_coords, non_outer_wall_coords, known_map, sensorModel=SLAMSensorAxioms, successorAxioms=SLAMSuccessorAxioms))
+
+        KB.append(PropSymbolExpr(agent.actions[t], time=t))
+        KB.append(numAdjWallsPerceptRules(t, agent.getPercepts()))
+
+        for x, y in non_outer_wall_coords:
+
+            whether_wall = PropSymbolExpr(wall_str, x, y)
+
+            if known_map[x][y] == -1:
+
+                check1 = entails(conjoin(KB), whether_wall)
+                check2 = entails(conjoin(KB), ~whether_wall)
+
+                if check1 and check2:
+                    exit(-1)
+
+                if check1:
+                    known_map[x][y] = 1
+                    KB.append(whether_wall)
+                elif check2:
+                    known_map[x][y] = 0
+                    KB.append(~whether_wall)
+
+        possible_locations = []
+        for a, b in non_outer_wall_coords:
+            whether_pacman = PropSymbolExpr(pacman_str, a, b, time=t)
+            examine = findModel(conjoin(KB) & whether_pacman)
+            if examine:
+                possible_locations.append((a, b))
+
+            check1 = entails(conjoin(KB), whether_pacman)
+            check2 = entails(conjoin(KB), ~whether_pacman)
+            if check1 and check2:
+                exit(-1)
+
+            if check1:
+                KB.append(whether_pacman)
+            elif check2:
+                KB.append(~whether_pacman)
+        agent.moveToNextState(agent.actions[t])
         yield (known_map, possible_locations)
 
 
