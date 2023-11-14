@@ -362,17 +362,14 @@ def checkLocationSatisfiability(x1_y1: Tuple[int, int], x0_y0: Tuple[int, int], 
     KB.append(conjoin(map_sent))
 
     "*** BEGIN YOUR CODE HERE ***"
-    KB.append(pacphysicsAxioms(0, all_coords, non_outer_wall_coords, walls_grid, None, allLegalSuccessorAxioms))
-    KB.append(pacphysicsAxioms(1, all_coords, non_outer_wall_coords, walls_grid, None, allLegalSuccessorAxioms))
+    KB.append(pacphysicsAxioms(0, all_coords, non_outer_wall_coords, walls_grid,successorAxioms=allLegalSuccessorAxioms))
+    KB.append(pacphysicsAxioms(1, all_coords, non_outer_wall_coords, walls_grid,successorAxioms=allLegalSuccessorAxioms))
     KB.append(PropSymbolExpr(pacman_str, x0, y0, time=0))
     KB.append(PropSymbolExpr(action0, time = 0))
     KB.append(PropSymbolExpr(action1, time = 1))
-
-
-    res1 = findModel(conjoin(KB) & ~PropSymbolExpr(pacman_str, x1, y1, time = 1))
-    res2 = findModel(conjoin(KB) & PropSymbolExpr(pacman_str, x1, y1, time = 1))
+    res2 = findModel(conjoin(KB) & ~PropSymbolExpr(pacman_str, x1, y1, time=1))
+    res1 = findModel(conjoin(KB) & PropSymbolExpr(pacman_str, x1, y1, time=1))
     return res1, res2
-
     "*** END YOUR CODE HERE ***"
 
 #______________________________________________________________________________
@@ -399,24 +396,32 @@ def positionLogicPlan(problem) -> List:
     KB = []
 
     "*** BEGIN YOUR CODE HERE ***"
-    KB.append(PropSymbolExpr(pacman_str( x0, y0, 0)))
+    KB.append(PropSymbolExpr(pacman_str, x0, y0, time=0))  # initial position
     for t in range(50):
-        inp_wall = []
-        for x, y in non_wall_coords:
-            inp_wall.append(PropSymbolExpr(pacman_str, x, y, t-1))
-        KB.append(exactlyOne(inp_wall))
+        print("Step %d" % t)
 
-        model = findModel(conjoin(KB) & PropSymbolExpr(pacman_str, xg, yg, t-1))
+        position_list = []
+        for x, y in non_wall_coords:
+            position_list.append(PropSymbolExpr(pacman_str, x, y, time=t))
+        KB.append(exactlyOne(position_list))
+
+        action_list = []
+        for action in actions:
+            action_list.append(PropSymbolExpr(action, time=t))
+        KB.append(exactlyOne(action_list))
+
+        if t > 0:
+            for x, y in non_wall_coords:
+                KB.append(pacmanSuccessorAxiomSingle(x, y, t, walls_grid))
+
+        query = PropSymbolExpr(pacman_str, xg, yg, time=t)
+        model = findModel(conjoin(KB) & query)
+
         if model:
             return extractActionSequence(model, actions)
-        inp_dir = []
-        for dir in actions:
-            inp_dir.append(PropSymbolExpr(dir, t-1))
-        KB.append(exactlyOne(inp_dir))
 
-        for x, y in non_wall_coords:
-            KB.append(pacmanSuccessorAxiomSingle(x, y, t, walls))
-    util.raiseNotDefined()
+
+    return None
     "*** END YOUR CODE HERE ***"
 
 #______________________________________________________________________________
@@ -445,7 +450,43 @@ def foodLogicPlan(problem) -> List:
     KB = []
 
     "*** BEGIN YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    KB.append(PropSymbolExpr(pacman_str, x0, y0, time=0))
+    for a, b in food:
+        KB.append(PropSymbolExpr(food_str,a, b, time=0))
+    for t in range(50):
+        print("Step %d" % t)
+        actual1_position = []
+        for x, y in non_wall_coords:
+            actual1_position.append(PropSymbolExpr(pacman_str, x, y, time=t))
+        KB.append(exactlyOne(actual1_position))
+
+        action_list = []
+        for action in actions:
+            action_list.append(PropSymbolExpr(action, time=t))
+        KB.append(exactlyOne(action_list))
+
+        # sẽ đúng nếu ko có điểm thức ăn nào còn tức là mọi ProSymbol của food_str đều sai. đúng khi tất cả đều sai => conjoin (~)
+        food_list = []
+        for a, b in food:
+            food_list.append(~PropSymbolExpr(food_str, a, b, time=t))
+        food_clause = conjoin(food_list)
+
+        if t > 0:
+            for x, y in non_wall_coords:
+                KB.append(pacmanSuccessorAxiomSingle(x, y, t, walls))
+
+        for a, b in food:
+            if t > 0:
+                non_food_cause = []
+                non_food_cause.append(~PropSymbolExpr(food_str, a, b, time= t-1))
+                non_food_cause.append(PropSymbolExpr(food_str, a, b, time= t-1) & PropSymbolExpr(pacman_str, a, b, time=t-1))
+                KB.append(~PropSymbolExpr(food_str, a, b, time=t) % disjoin(non_food_cause))
+
+        model = findModel(conjoin(KB) & food_clause)
+        if model:
+            return extractActionSequence(model, actions)
+
+    return None
     "*** END YOUR CODE HERE ***"
 
 #______________________________________________________________________________
